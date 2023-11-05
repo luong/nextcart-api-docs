@@ -1,0 +1,436 @@
+openapi: 3.0.3
+info:
+  title: NextCart API
+  description: |-
+    This is a learning project aiming to provide an overal respective about software development.
+    Links:
+    - [API with NodeJS](https://github.com/luong/nextcart-api-nodejs)
+    - [API with Golang](https://github.com/luong/nextcart-api-go)
+    - [Client with NextJS](https://github.com/luong/nextcart-client-nextjs)
+    - [Client with ReactNative](https://github.com/luong/nextcart-client-reactnative)
+  contact:
+    email: luongfox@gmail.com
+  version: 1.0.0
+servers:
+  - url: http://localhost:3001
+    description: Local Server
+  - url: https://nextcart.12g.co
+    description: Production Server
+tags:
+  - name: common
+    description: Endpoints of general commands
+  - name: customer
+    description: Endpoints of customers, accounts
+  - name: order
+    description: Endpoints of checkout flow such as cart items, orders, shipment
+  - name: product
+    description: Endpoints of products, brands
+paths:
+  /:
+    get:
+      tags: [common]
+      summary: Ping to check if the server is live
+      description: This check is for HTTP response only
+      operationId: serverRoot
+      responses:
+        "200":
+          description: Confirmed that the server is live
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    example: hello
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /server/ping:
+    get:
+      tags: [common]
+      summary: Ping to check if the server is live, database connection checking included
+      description: Check if HTTP response and database are live
+      operationId: serverPing
+      responses:
+        "200":
+          description: Confirmed that the server is live
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    example: {}
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /auth/login:
+    post:
+      tags: [common]
+      summary: Do authentication to Cognito user pool, used for testing purpose
+      description: Check if an customer account is valid
+      operationId: authLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: john@test.com
+                password:
+                  type: string
+                  example: 12345678
+      responses:
+        "200":
+          description: the account is confirmed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    example: {}
+        "500":
+          description: Email or password is invalid
+          $ref: "#/components/responses/ServerError"
+  /customers:
+    post:
+      tags: [customer]
+      summary: Create a new customer
+      operationId: createCustomer
+      requestBody:
+        $ref: "#/components/requestBodies/CreateCustomerRequest"
+      responses:
+        "200":
+          description: the account created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: ok
+                  data:
+                    $ref: "#/components/schemas/Customer"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /products:
+    get:
+      tags: [product]
+      summary: List products
+      operationId: listProducts
+      parameters:
+        - name: name
+          in: path
+          schema:
+            type: string
+            example: Blue shirt
+          required: false
+        - name: brandId
+          in: path
+          schema:
+            type: integer
+            example: 1
+          required: false
+        - name: prices
+          in: path
+          schema:
+            type: string
+            example: "15-90"
+          required: false
+        - name: page
+          in: path
+          schema:
+            type: integer
+            example: 1
+          required: false
+        - name: itemsPerPage
+          in: path
+          schema:
+            type: integer
+            example: 20
+          required: false
+        - name: sortBy
+          in: path
+          schema:
+            type: string
+            enum: [id, name, price]
+            example: id
+          required: false
+        - name: orderBy
+          in: path
+          schema:
+            type: string
+            enum: [asc, desc]
+            example: asc
+          required: false
+
+      responses:
+        "200":
+          description: Return list of products base on search criteria
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Product"
+                      pagination:
+                        type: object
+                        properties:
+                          totalItems:
+                            type: integer
+                            example: 10
+                          totalPages:
+                            type: integer
+                            example: 1
+                          currentPage:
+                            type: integer
+                            example: 1
+                          nextPage:
+                            type: integer
+                            example: 1
+                          prevPage:
+                            type: integer
+                            example: null
+        "500":
+          $ref: "#/components/responses/ServerError"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  requestBodies:
+    CreateCustomerRequest:
+      description: Request body for creating a new customer
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                example: john@test.com
+              firstName::
+                type: string
+                example: John
+              lastName::
+                type: string
+                example: Williams
+
+  responses:
+    ServerError:
+      description: There is an error from the server
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: number
+                example: 500
+              message:
+                type: string
+                example: action_failed
+              data:
+                type: object
+                example: {}
+    ValidationError:
+      description: Fail to validate inputs from the client
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: number
+                example: 400
+              message:
+                type: string
+                example: validation_failed
+              data:
+                type: object
+                example: {}
+    UnauthorizedError:
+      description: No permissions to access resources
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: number
+                example: 401
+              message:
+                type: string
+                example: unauthorized
+              data:
+                type: object
+                example: {}
+  schemas:
+    Customer:
+      type: object
+      properties:
+        id:
+          type: string
+          example: c4a87428-3021-708b-d9b6-f70db430b78b
+        email:
+          type: string
+          example: john@test.com
+        firstName::
+          type: string
+          example: John
+        lastName::
+          type: string
+          example: Williams
+        createdAt:
+          type: string
+          example: 2023-11-01 15:20:00
+        updatedAt:
+          type: string
+          example: 2023-11-01 15:20:00
+      required: [id, email, firstName]
+    Address:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        customerId:
+          type: string
+          example: c4a87428-3021-708b-d9b6-f70db430b78b
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Williams
+        phone:
+          type: string
+          example: +0125643345
+        address1:
+          type: string
+          example: 112 Sun Avenue
+        address2:
+          type: string
+          example: 112 Sun Avenue
+        city:
+          type: string
+          example: San Francisco
+        state:
+          type: string
+          example: CA
+        country:
+          type: string
+          example: us
+        isDefault:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          example: 2023-11-01 15:20:00
+        updatedAt:
+          type: string
+          example: 2023-11-01 15:20:00
+      required:
+        [
+          id,
+          customerId,
+          firstName,
+          lastName,
+          address1,
+          state,
+          country,
+          isDefault,
+        ]
+    Brand:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Samsung
+        createdAt:
+          type: string
+          example: 2023-11-01 15:20:00
+        updatedAt:
+          type: string
+          example: 2023-11-01 15:20:00
+      required: [id, name]
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Samsung
+        description:
+          type: string
+        price:
+          type: number
+          example: 10.5
+        quantity:
+          type: integer
+          example: 10
+        brandId:
+          type: integer
+          example: 2
+        image:
+          type: string
+          example: https://nextcart.s3.amazonaws.com/product/putting-on-your-shoes_925x.jpg
+        status:
+          type: string
+          enum: [Active, Archieved]
+          example: Active
+        createdAt:
+          type: string
+          example: 2023-11-01 15:20:00
+        updatedAt:
+          type: string
+          example: 2023-11-01 15:20:00
+      required: [id, name, price, quantity, brandId, status]
