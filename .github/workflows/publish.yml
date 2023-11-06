@@ -1,0 +1,15 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+    
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '20.x'
+      - run: npm install
+      - run: npx openapi-generator-cli generate -i openapi.yaml -o client-lib/packages/typescript/src -g typescript-fetch --additional-properties=supportsES6=true,typescriptThreePlus=true
