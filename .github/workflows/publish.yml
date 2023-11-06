@@ -15,4 +15,4 @@ jobs:
       - run: npx openapi-generator-cli generate -i openapi.yaml \
           -o client-lib/packages/typescript/src -g typescript-fetch \
           --additional-properties=supportsES6=true,typescriptThreePlus=true
-      - run: cd packages/typescript && npm run build
+      - run: cd packages/typescript && npm run build && cd -
