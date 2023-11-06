@@ -13,6 +13,6 @@ jobs:
           node-version: '20.x'
       - run: npm install
       - run: npx openapi-generator-cli generate -i openapi.yaml \
-          -o client-lib/packages/typescript/src -g typescript-fetch \
+          -o packages/typescript/src -g typescript-fetch \
           --additional-properties=supportsES6=true,typescriptThreePlus=true
       - run: cd packages/typescript && npm run build && cd -
