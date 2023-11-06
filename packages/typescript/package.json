@@ -1,7 +1,10 @@
 {
-  "name": "nextcart-sdk",
+  "name": "@luong/nextcart-sdk",
   "version": "1.0.1",
-  "author": "luongfox",
+  "author": {
+    "name": "luong",
+    "email": "luongfox@gmail.com"
+  },
   "license": "MIT",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -14,6 +17,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/luong/nextcart-api-docs.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/luong"
   },
   "devDependencies": {
     "typescript": "^5.2.2"
