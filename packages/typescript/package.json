@@ -18,9 +18,6 @@
     "type": "git",
     "url": "https://github.com/luong/nextcart-api-docs.git"
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/luong"
-  },
   "devDependencies": {
     "typescript": "^5.2.2"
   }
