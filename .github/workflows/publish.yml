@@ -16,7 +16,7 @@ jobs:
       - run: npx openapi-generator-cli generate -i openapi.yaml \
           -o packages/typescript/src -g typescript-fetch \
           --additional-properties=supportsES6=true,typescriptThreePlus=true
-      - run: cd packages/typescript && npm run build
-      - run: npm publish
+      - run: cd packages/typescript && npm run build && cd -
+      - run: cd packages/typescript && npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
