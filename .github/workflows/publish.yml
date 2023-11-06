@@ -2,6 +2,9 @@ name: Publish
 
 on:
   workflow_dispatch:
+  push:
+    tags:
+      - v[0-9]+.[0-9]+.[0-9]+
     
 jobs:
   publish:
@@ -19,6 +22,7 @@ jobs:
       - run: npx openapi-generator-cli generate -i openapi.yaml \
           -o packages/typescript/src -g typescript-fetch \
           --additional-properties=supportsES6=true,typescriptThreePlus=true
+      - run: npm version $GITHUB_REF_NAME
       - run: cd packages/typescript && npm run build && cd -
       - run: cd packages/typescript && npm publish
         env:
