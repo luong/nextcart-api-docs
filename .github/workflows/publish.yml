@@ -11,8 +11,13 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: '20.x'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@luong'
       - run: npm install
       - run: npx openapi-generator-cli generate -i openapi.yaml \
           -o packages/typescript/src -g typescript-fetch \
           --additional-properties=supportsES6=true,typescriptThreePlus=true
       - run: cd packages/typescript && npm run build && cd -
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
