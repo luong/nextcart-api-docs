@@ -14,8 +14,6 @@ info:
 servers:
   - url: http://localhost:3001
     description: Local Server
-  - url: https://nextcart.12g.co
-    description: Production Server
 tags:
   - name: common
     description: Endpoints of general commands

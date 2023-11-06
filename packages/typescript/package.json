@@ -1,0 +1,17 @@
+{
+  "name": "nextcart-sdk",
+  "version": "1.0.1",
+  "author": "luongfox",
+  "license": "MIT",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "build": "build"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2"
+  }
+}
