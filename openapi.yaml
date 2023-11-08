@@ -120,7 +120,7 @@ paths:
     get:
       tags: [customer]
       summary: Get a customer information base on ID
-      operationId: getCustomerById
+      operationId: getCustomer
       parameters:
         - name: id
           in: path
@@ -147,8 +147,14 @@ paths:
           $ref: '#/components/responses/ServerError'
     put:
       tags: [customer]
-      summary: Update information of an existing customer
+      summary: Update an existing customer
       operationId: updateCustomer
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: integer
+          required: true
       requestBody:
         $ref: '#/components/requestBodies/CustomerRequest'
       responses:
@@ -529,8 +535,8 @@ paths:
           $ref: '#/components/responses/ServerError'
     put:
       tags: [order]
-      summary: Update an existing customer address
-      operationId: updateCustomerAddress
+      summary: Update an existing order
+      operationId: updateOrder
       parameters:
         - name: customerId
           in: path
@@ -790,7 +796,12 @@ components:
               cartItems:
                 type: array
                 items:
-                  $ref: '#/components/requestBodies/CartItemRequest'
+                  type: object
+                  properties:
+                    productId:
+                      type: integer
+                    quantity:
+                      type: integer
               addressId:
                 type: integer
               couponCode:
