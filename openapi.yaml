@@ -23,6 +23,9 @@ tags:
     description: Endpoints of checkout flow such as cart items, orders, shipment
   - name: product
     description: Endpoints of products, brands
+security:
+  - BearerAuth: []
+
 paths:
   /:
     get:
@@ -30,8 +33,9 @@ paths:
       summary: Ping to check if the server is live
       description: This check is for HTTP response only
       operationId: serverRoot
+      security: []
       responses:
-        "200":
+        '200':
           description: Confirmed that the server is live
           content:
             application/json:
@@ -47,16 +51,17 @@ paths:
                   data:
                     type: object
                     example: hello
-        "500":
-          $ref: "#/components/responses/ServerError"
+        '500':
+          $ref: '#/components/responses/ServerError'
   /server/ping:
     get:
       tags: [common]
       summary: Ping to check if the server is live, database connection checking included
       description: Check if HTTP response and database are live
       operationId: serverPing
+      security: []
       responses:
-        "200":
+        '200':
           description: Confirmed that the server is live
           content:
             application/json:
@@ -72,14 +77,15 @@ paths:
                   data:
                     type: object
                     example: {}
-        "500":
-          $ref: "#/components/responses/ServerError"
+        '500':
+          $ref: '#/components/responses/ServerError'
   /auth/login:
     post:
       tags: [common]
       summary: Do authentication to Cognito user pool, used for testing purpose
       description: Check if an customer account is valid
       operationId: authLogin
+      security: []
       requestBody:
         required: true
         content:
@@ -94,8 +100,8 @@ paths:
                   type: string
                   example: 12345678
       responses:
-        "200":
-          description: the account is confirmed
+        '200':
+          description: the account is confirmed. AccessToken / TokenId included in data response
           content:
             application/json:
               schema:
@@ -110,18 +116,18 @@ paths:
                   data:
                     type: object
                     example: {}
-        "500":
+        '500':
           description: Email or password is invalid
-          $ref: "#/components/responses/ServerError"
+          $ref: '#/components/responses/ServerError'
   /customers:
     post:
       tags: [customer]
       summary: Create a new customer
       operationId: createCustomer
       requestBody:
-        $ref: "#/components/requestBodies/CreateCustomerRequest"
+        $ref: '#/components/requestBodies/CustomerRequest'
       responses:
-        "200":
+        '200':
           description: the account created successfully
           content:
             application/json:
@@ -135,11 +141,467 @@ paths:
                     type: string
                     example: ok
                   data:
-                    $ref: "#/components/schemas/Customer"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "500":
-          $ref: "#/components/responses/ServerError"
+                    $ref: '#/components/schemas/Customer'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /customers/{id}:
+    get:
+      tags: [customer]
+      summary: Get a customer information base on ID
+      operationId: getCustomerById
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Found out a customer from ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: ok
+                  data:
+                    $ref: '#/components/schemas/Customer'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    put:
+      tags: [customer]
+      summary: Update information of an existing customer
+      operationId: updateCustomer
+      requestBody:
+        $ref: '#/components/requestBodies/CustomerRequest'
+      responses:
+        '200':
+          description: the account created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    example: {}
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /customers/{customerId}/addresses:
+    get:
+      tags: [customer]
+      summary: Get all addresses of an customer
+      operationId: getCustomerAddresses
+      parameters:
+        - name: customerId
+          in: path
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: ok
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Address'
+        '500':
+          $ref: '#/components/responses/ServerError'      
+    post:
+      tags: [customer]
+      summary: Create a new customer address
+      description: An user has one default address only.
+      operationId: createCustomerAddress
+      parameters:
+        - name: customerId
+          in: path
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: '#/components/requestBodies/AddressRequest'
+      responses:
+        '200':
+          description: Created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: ok
+                  data:
+                    $ref: '#/components/schemas/Address'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /customers/{customerId}/addresses/{addressId}:
+    put:
+      tags: [customer]
+      summary: Update an existing customer address
+      operationId: updateCustomerAddress
+      parameters:
+        - name: customerId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: addressId
+          in: path
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        $ref: '#/components/requestBodies/AddressRequest'
+      responses:
+        '200':
+          description: Updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    example: {}
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    delete:
+      tags: [customer]
+      summary: Delete an existing customer address
+      operationId: deleteCustomerAddress
+      parameters:
+        - name: customerId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: addressId
+          in: path
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    example: {}
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /customers/{customerId}/cart:
+    get:
+      tags: [order]
+      summary: Get cart items of a customer
+      operationId: getCartItems
+      parameters:
+        - name: customerId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CartItem'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    post:
+      tags: [order]
+      summary: Add a new cart item
+      operationId: addCartItem
+      parameters:
+        - name: customerId
+          in: path
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: '#/components/requestBodies/CartItemRequest'
+      responses:
+        '200':
+          description: Created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: object
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /customers/{customerId}/cart/{cartItemId}:
+    put:
+      tags: [order]
+      summary: Update an existing cart item
+      operationId: updateCartItem
+      parameters:
+        - name: customerId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: cartItemId
+          in: path
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        $ref: '#/components/requestBodies/CartItemRequest'
+      responses:
+        '200':
+          description: Updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    example: {}
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    delete:
+      tags: [order]
+      summary: Delete an existing cart item
+      operationId: deleteCartItem
+      parameters:
+        - name: customerId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: cartItemId
+          in: path
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    example: {}
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /customers/{customerId}/orders:
+    post:
+      tags: [order]
+      summary: Add a new order
+      operationId: addOrder
+      parameters:
+        - name: customerId
+          in: path
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: '#/components/requestBodies/OrderRequest'
+      responses:
+        '200':
+          description: Created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /customers/{customerId}/order/{orderId}:
+    get:
+      tags: [order]
+      summary: Get an existing order
+      operationId: getOrder
+      parameters:
+        - name: customerId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: orderId
+          in: path
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: ok
+                  data:
+                    $ref: '#/components/schemas/Order'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    put:
+      tags: [order]
+      summary: Update an existing customer address
+      operationId: updateCustomerAddress
+      parameters:
+        - name: customerId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: orderId
+          in: path
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  $ref: '#/components/schemas/OrderStatus'
+      responses:
+        '200':
+          description: Updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    example: {}
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    
   /products:
     get:
       tags: [product]
@@ -147,44 +609,44 @@ paths:
       operationId: listProducts
       parameters:
         - name: name
-          in: path
+          in: query
           schema:
             type: string
             example: Blue shirt
           required: false
         - name: brandId
-          in: path
+          in: query
           schema:
             type: integer
             example: 1
           required: false
         - name: prices
-          in: path
+          in: query
           schema:
             type: string
-            example: "15-90"
+            example: '15-90'
           required: false
         - name: page
-          in: path
+          in: query
           schema:
             type: integer
             example: 1
           required: false
         - name: itemsPerPage
-          in: path
+          in: query
           schema:
             type: integer
             example: 20
           required: false
         - name: sortBy
-          in: path
+          in: query
           schema:
             type: string
             enum: [id, name, price]
             example: id
           required: false
         - name: orderBy
-          in: path
+          in: query
           schema:
             type: string
             enum: [asc, desc]
@@ -192,7 +654,7 @@ paths:
           required: false
 
       responses:
-        "200":
+        '200':
           description: Return list of products base on search criteria
           content:
             application/json:
@@ -211,7 +673,7 @@ paths:
                       items:
                         type: array
                         items:
-                          $ref: "#/components/schemas/Product"
+                          $ref: '#/components/schemas/Product'
                       pagination:
                         type: object
                         properties:
@@ -230,17 +692,67 @@ paths:
                           prevPage:
                             type: integer
                             example: null
-        "500":
-          $ref: "#/components/responses/ServerError"
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /products/{id}:
+    get:
+      tags: [product]
+      summary: Get a specific product
+      operationId: getProduct
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/Product'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /brands:
+    get:
+      tags: [product]
+      summary: Get all brands
+      operationId: getBrands
+      responses:
+        '200':
+          description: Fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/Brand'
+        '500':
+          $ref: '#/components/responses/ServerError'
 components:
   securitySchemes:
-    bearerAuth:
+    BearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
   requestBodies:
-    CreateCustomerRequest:
-      description: Request body for creating a new customer
+    CustomerRequest:
+      description: Request body for an customer
       required: true
       content:
         application/json:
@@ -256,7 +768,64 @@ components:
               lastName::
                 type: string
                 example: Williams
-
+            required: [email, firstName, lastName]
+    AddressRequest:
+      description: Request body for updating an address
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              firstName:
+                type: string
+              lastName:
+                type: string
+              phone:
+                type: string
+              address1:
+                type: string
+              address2:
+                type: string
+              city:
+                type: string
+              state:
+                type: string
+              country:
+                type: string
+              isDefault:
+                type: boolean
+            required: [firstName, lastName, phone, address1, city, country]
+    CartItemRequest:
+      description: Request body for an cart item
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              productId:
+                type: integer
+              quantity:
+                type: integer
+            required: [productId, quantity]
+    OrderRequest:
+      description: Request body for an order
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              cartItems:
+                type: array
+                items:
+                  $ref: '#/components/requestBodies/CartItemRequest'
+              addressId:
+                type: integer
+              couponCode:
+                type: string
+            required: [cartItems, addressId]
   responses:
     ServerError:
       description: There is an error from the server
@@ -422,13 +991,111 @@ components:
           type: string
           example: https://nextcart.s3.amazonaws.com/product/putting-on-your-shoes_925x.jpg
         status:
-          type: string
-          enum: [Active, Archieved]
-          example: Active
+          $ref: '#/components/schemas/ProductStatus'
         createdAt:
           type: string
           example: 2023-11-01 15:20:00
         updatedAt:
           type: string
           example: 2023-11-01 15:20:00
+        brand:
+          $ref: '#/components/schemas/Brand'
       required: [id, name, price, quantity, brandId, status]
+    CartItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        customerId:
+          type: string
+        productId:
+          type: integer
+        quantity:
+          type: integer
+          example: 10
+        createdAt:
+          type: string
+          example: 2023-11-01 15:20:00
+        updatedAt:
+          type: string
+          example: 2023-11-01 15:20:00
+      required: [id, customerId, productId, quantity]
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        customerId:
+          type: string
+        originalSubtotal:
+          type: number
+        originalShipping:
+          type: number
+        originalTotal:
+          type: number
+        subtotal:
+          type: number
+        coupon:
+          type: number
+        shipping:
+          type: number
+        total:
+          type: number
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+        shippingAddress:
+          type: object
+          description: json object of address
+        cancelledAt:
+          type: string
+          example: 2023-11-01 15:20:00
+        createdAt:
+          type: string
+          example: 2023-11-01 15:20:00
+        updatedAt:
+          type: string
+          example: 2023-11-01 15:20:00
+        orderItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+      required: [id, customerId, productId, quantity]
+    OrderItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        orderId:
+          type: integer
+        productId:
+          type: integer
+        quantity:
+          type: integer
+        price:
+          type: number
+        priceSet:
+          type: number
+        createdAt:
+          type: string
+          example: 2023-11-01 15:20:00
+        updatedAt:
+          type: string
+          example: 2023-11-01 15:20:00
+      required: [id, orderId, productId, quantity]
+    OrderStatus:
+      type: string
+      enum:
+        - Pending
+        - Completed
+        - Cancelled
+      example: Completed
+    ProductStatus:
+      type: string
+      enum:
+        - Active
+        - Archieved
+      example: Active
+    
