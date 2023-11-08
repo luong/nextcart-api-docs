@@ -1,6 +1,6 @@
 {
   "name": "@luong/nextcart-sdk",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "author": {
     "name": "luong",
     "email": "luongfox@gmail.com"
@@ -16,7 +16,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/luong/nextcart-api-docs.git"
+    "url": "https://github.com/luong/nextcart-api-docs.git",
+    "directory": "packages/typescript"
   },
   "devDependencies": {
     "typescript": "^5.2.2"
